@@ -8,6 +8,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@vueuse/core": "^9.13.0",
+    "mathjs": "^11.7.0",
+    "tinycolor2": "^1.6.0",
     "vue": "^3.2.45"
   },
   "devDependencies": {

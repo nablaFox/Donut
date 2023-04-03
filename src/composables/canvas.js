@@ -1,36 +1,45 @@
+import { onMounted, ref } from 'vue'
+import tinycolor from "tinycolor2"
+
 export function useCanvas(canvas) {
-    const ctx = canvas.getContext("2d")
+    const ctx = ref(null)
+    onMounted(() => (ctx.value = canvas.value.getContext("2d")))
 
-    const getBrightness = light => '#' + Math.floor(light * 255)
-    .toString(16)
-    .padStart(2, '0')
-    .repeat(3)
-
-    ctx.drawPixel = function (x, y, light) {
-        ctx.fillStyle = getBrightness(light)
-        this.fillRect(
+    const drawPixel = (x, y, color, light) => {
+        ctx.value.fillStyle = tinycolor(color).setAlpha(light)
+        ctx.value.fillRect(
             Math.round(x),
             Math.round(y),
-            1, 1
+            2, 2
         )
     }
 
-    ctx.clear = async function () {
-        this.clearRect(
+    const plotPoints = points => {
+       points.forEach((point) => drawPixel(...point))
+    }
+
+    const clear = () => {
+        ctx.value.clearRect(
             0, 0,
-            canvas.width,
-            canvas.height
+            canvas.value.width,
+            canvas.value.height
         )
     }
 
     const runAnimation = callback => {
-        ctx.clear()
+        clear()
 
         window.requestAnimationFrame(() => {
             runAnimation(callback)
         })
-        callback(ctx)
+        callback()
     }
 
-    return 
+    return { 
+        ctx,
+        drawPixel,
+        clear,
+        runAnimation,
+        plotPoints
+    }
 }

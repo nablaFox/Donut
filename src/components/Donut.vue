@@ -1,52 +1,32 @@
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
+import { dot, norm } from 'mathjs'
+import { useCanvas } from '../composables/canvas'
+import { useDrag } from '../composables/drag'
 
-defineProps({
-  msg: {
-    type: String,
-    required: true
-  }
-})
+import ColorPicker from './ColorPicker.vue'
 
-const canvas = ref(null)
-
-const R1 = 1
-const R2 = 2
-const K2 = 5
-const K1 = (canvas.width * 3 * K2) / (8 * (R1 + R2)) 
-// with z = 0 the donut is 3/4th of the way from the center to the side of the screen
-
-const thetaSpacing = 0.1
-const phiSpacing = 0.07
-
-let A = 0
-let B = 0
-
-const donutPoints = []
-
-function computeLight(
-    cosTheta, 
-    sinTheta, 
-    cosPhi, 
-    sinPhi, 
-    cosA, 
-    sinA,
-    cosB,
-    sinB
+function renderDonut(
+    A, B, L,
+    maxwidth,
+    offsetX,
+    offsetY,
+    dist,
+    color,
+    config
 ) {
-    const result = cosPhi*cosTheta*sinB - cosA*cosTheta*sinPhi
-    - sinA*sinTheta + cosB*(cosA*sinTheta - cosTheta*sinA*sinPhi)
+    const donutPoints = []
 
-    return result / Math.sqrt(2)
-}
-
-function renderFrame(deltaA, deltaB) {
-    A = (A + deltaA) % 360
-    B = (B + deltaB) % 360
+    const R1 = config?.R1 ?? 1
+    const R2 = config?.R2 ?? 2
+    const K2 = config?.K2 ?? 5
+    const thetaSpacing = config?.thetaSpacing ?? .2
+    const phiSpacing = config?.phiSpacing ?? .07
+    const K1 = dist*maxwidth*K2 / (2 *(R1 + R2))
 
     const sinA = Math.sin(A); const sinB = Math.sin(B)
     const cosA = Math.cos(A); const cosB = Math.cos(B)
-    
+
     for (let theta = 0; theta < 2 * Math.PI; theta += thetaSpacing) {
         const sinTheta = Math.sin(theta) 
         const cosTheta = Math.cos(theta)
@@ -60,47 +40,78 @@ function renderFrame(deltaA, deltaB) {
 
             const x = circleX * (cosB*cosPhi + sinA*sinB*sinPhi) - circleY*cosA*sinB
             const y = circleX * (cosPhi*sinB - cosB*sinA*sinPhi) + circleY*cosA*cosB
-            const z = circleX * (cosA*sinPhi) + circleY*sinA 
+            const z = K2 + circleX*cosA*sinPhi + circleY*sinA
 
-            const xp = ((K1 * x) / (K2 + z)) + canvas.width / 2
-            const yp = ((K1 * y) / (K2 + z)) + canvas.height / 2
+            const xp = Math.floor(offsetX + K1*x/z)
+            const yp = Math.floor(offsetY - K1*y/z)
 
-            const light = computeLight(
-                cosTheta, 
-                sinTheta, 
-                cosPhi, 
-                sinPhi, 
-                cosA, 
-                sinA,
-                cosB,
-                sinB
-            )
-
-            if (light > 0) donutPoints.push([xp, yp, light])
+            const n = [
+                cosTheta*(cosB*cosPhi + sinTheta*sinB*sinPhi) - cosA*sinB*sinTheta,
+                cosTheta*(cosPhi*sinB - cosB*sinA*sinPhi) + cosA*cosB*sinTheta,
+                cosA*cosTheta*sinPhi + sinA*sinTheta
+            ]
+            
+            const light = dot(n, L)/norm(L)
+            if (light > 0) donutPoints.push([xp, yp, color, light])
         }
     }
+
+    return donutPoints
 }
 
-function draw(ctx) {
-    donutPoints.forEach(point => {
-        const [x, y, light ] = point
-        ctx.drawPixel(x, y, light)
-    })
+let A = -1; let B = 0
+let light = [-1, 0, -1]
+const distance = ref(.8)
+const color = ref('white')
+const animating = ref(false)
+
+const canvas = ref(null)
+const { runAnimation, plotPoints } = useCanvas(canvas)
+
+function rotate(pull) {
+    B += pull.dx / 100
+    A -= pull.dy / 100
 }
 
-function update(ctx) {
-    renderFrame(0.025, -.01)
-    draw(ctx)
-    donutPoints.length = 0
+function update() {
+    const donutPoints = renderDonut(A, B, light, 300, 200, 200, distance.value, color.value)
+    plotPoints(donutPoints)
+
+    if (!animating.value) return
+    A = (A - .01) % 314
+    B = (B + .02) % 314
 }
+
+useDrag(canvas, rotate)
+onMounted(() => runAnimation(update))
 </script>
 
 <template>
-  <canvas width="350" height="350" ref="canvas"></canvas>
+
+    <canvas 
+        width="400" 
+        height="400" 
+        ref="canvas"
+        @click="test"
+    >
+    </canvas>
+
+    <ColorPicker v-model:color="color" />
+
+    <button @click="animating = !animating">Test me </button>
+
+    <label for=""> Distance </label>
+    <input type="range" min="0.2" max="1" step="0.01" v-model="distance">
+
+    <label for=""> Light x </label>
+    <input type="range" min="-2" max="2" step="0.01" v-model="light[0]">
+
+    <label for=""> Light y </label>
+    <input type="range" min="-2" max="2" step="0.01" v-model="light[1]">
+
+
 </template>
 
 <style scoped>
-canvas {
-  border: 1px solid white;
-}
+
 </style>

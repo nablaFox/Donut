@@ -1,6 +1,8 @@
 <script setup>
-
+import { ref } from 'vue'
 import Donut from './components/Donut.vue'
+
+
 
 </script>
 
@@ -9,6 +11,7 @@ import Donut from './components/Donut.vue'
   <div class="container">
     <h1> Donut Spin! </h1>
     <Donut />
+
   </div>
 
 </template>

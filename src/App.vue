@@ -1,21 +1,35 @@
 <script setup>
-import Donut from './components/Donut.vue'
-import VueButton from './components/VueButton.vue'
+import { ref } from 'vue'
+import { useRender } from './composables/render'
+
+import Obj from './components/Object.vue'
+
+const render = useRender([0, 0], [1, 0, -1], .7, 300, 200, 200, 'white')
+const { renderedPoints, renderCube, renderDonut } = render
+
+const rot = [0, 0]
+const animating = ref(true)
+const isDonut = ref(true)
+
+function onUpdate() {
+  isDonut.value ? renderDonut() : renderCube()
+
+  if (!animating.value) return
+  rot[0] = (rot[0] - .03) % 314
+  rot[1] = (rot[1] + .02) % 314
+  render.rotate(rot)
+}
+
+
 </script>
 
 <template>
 
-  <div class="container">
-    <Donut />
-    <div class="left">
-      <h1> A spinning Donut! </h1>
-
-      <div class="links">
-        <VueButton label="See the math" />
-        <VueButton label="See the cube" />
-      </div>
-    </div>
-  </div>
+  <Obj
+    :rot="rot"
+    :points="renderedPoints"
+    @update="onUpdate"
+  />
 
 </template>
 

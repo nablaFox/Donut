@@ -1,9 +1,12 @@
 @import './base.css';
 
 #app {
-  padding: 2rem;
   font-weight: normal;
   width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 a,

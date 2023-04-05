@@ -4,7 +4,7 @@ import { dot, norm } from 'mathjs'
 import { useCanvas } from '../composables/canvas'
 import { useDrag } from '../composables/drag'
 
-import ColorPicker from './ColorPicker.vue'
+import VueButton from './VueButton.vue'
 
 function renderDonut(
     A, B, L,
@@ -88,30 +88,74 @@ onMounted(() => runAnimation(update))
 
 <template>
 
-    <canvas 
-        width="400" 
-        height="400" 
-        ref="canvas"
-        @click="test"
-    >
-    </canvas>
+    <div class="donut">
 
-    <ColorPicker v-model:color="color" />
+        <div class="controls">
+            <h2> The Parameters </h2>
 
-    <button @click="animating = !animating">Test me </button>
+            <div class="row">
+                <label> Distance </label>
+                <input type="range" min="0.2" max="1" step="0.01" v-model="distance">
+            </div>
 
-    <label for=""> Distance </label>
-    <input type="range" min="0.2" max="1" step="0.01" v-model="distance">
+            <div class="row">
+                <label for=""> Light x </label>
+                <input type="range" min="-2" max="2" step="0.01" v-model="light[0]">
+            </div>
 
-    <label for=""> Light x </label>
-    <input type="range" min="-2" max="2" step="0.01" v-model="light[0]">
+            <div class="row">
+                <label for=""> Light y </label>
+                <input type="range" min="-2" max="2" step="0.01" v-model="light[1]">
+            </div>
 
-    <label for=""> Light y </label>
-    <input type="range" min="-2" max="2" step="0.01" v-model="light[1]">
+            <VueButton 
+                label="Spin"
+                @click="animating = !animating"
+            />
+        </div>
+
+        <canvas
+            ref="canvas"
+            width="400" 
+            height="400" 
+        >
+        </canvas>
+    </div>
 
 
 </template>
 
 <style scoped>
+.donut {
+    display: flex;
+    gap: 40px;
+}
+
+h2 {
+    margin-bottom: 5px;
+}
+
+.controls {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    background-color: #252529;
+    border-radius: 8px;
+    padding: 20px;
+    width: 300px;
+
+}
+
+.button {
+    width: 50%;
+    margin-top: 20px;
+}
+
+.row {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 80%;
+}
 
 </style>

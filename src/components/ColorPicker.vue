@@ -47,7 +47,7 @@ useDrag(handle, moveSlider)
 
 <style>
 .slider {
-    display: flex;
+    display: inline-flex;
     align-items: center;
 }
 

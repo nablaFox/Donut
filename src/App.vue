@@ -1,17 +1,20 @@
 <script setup>
-import { ref } from 'vue'
 import Donut from './components/Donut.vue'
-
-
-
+import VueButton from './components/VueButton.vue'
 </script>
 
 <template>
 
   <div class="container">
-    <h1> Donut Spin! </h1>
     <Donut />
+    <div class="left">
+      <h1> A spinning Donut! </h1>
 
+      <div class="links">
+        <VueButton label="See the math" />
+        <VueButton label="See the cube" />
+      </div>
+    </div>
   </div>
 
 </template>
@@ -22,6 +25,19 @@ h1 {
 }
 
 .container {
-  text-align: center;
+  align-items: center;
+  display: flex;
+  gap: 30px;
+  padding: 50px 0;
+}
+
+.button {
+  height: 40px;
+  background-color: #2b2b2e;
+}
+
+.links {
+  display: inline-flex;
+  gap: 10px;
 }
 </style>
